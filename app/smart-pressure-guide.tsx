@@ -4,9 +4,12 @@ import { Mic, MicOff, Volume2, VolumeX, RotateCcw, Gauge, ChevronLeft } from "lu
 
 declare global {
   interface Window {
-    webkitSpeechRecognition: typeof SpeechRecognition;
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
   }
 }
+// もしエラーが消えない場合は、以下も追加してください
+type SpeechRecognition = any;
 
 const MANUFACTURER_CORRECTION: Record<string, { label: string; front: number; rear: number; note: string }> = {
   continental:  { label: "Continental",  front:  0, rear:  0, note: "標準ケーシング・GP5000定番" },
