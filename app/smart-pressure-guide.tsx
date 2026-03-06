@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Mic, MicOff, Volume2, VolumeX, RotateCcw, Gauge, ChevronLeft } from "lucide-react";
 
-const MANUFACTURER_CORRECTION = {
+const MANUFACTURER_CORRECTION: Record<string, { label: string; front: number; rear: number; note: string }> = {
   continental:  { label: "Continental",  front:  0, rear:  0, note: "標準ケーシング・GP5000定番" },
   panaracer:    { label: "Panaracer",    front: +2, rear: +2, note: "国産・高剛性ケーシング" },
   vittoria:     { label: "Vittoria",     front: -3, rear: -3, note: "薄いケーシング・低抵抗設計" },
@@ -14,7 +14,7 @@ const MANUFACTURER_CORRECTION = {
   other:        { label: "その他",        front:  0, rear:  0, note: "補正なし" },
 };
 
-const SURFACE_CORRECTION = {
+const SURFACE_CORRECTION: Record<string, { label: string; front: number; rear: number; emoji: string }> = {
   dry:    { label: "ドライ",   front:  0, rear:  0, emoji: "☀️" },
   wet:    { label: "ウェット", front: -7, rear: -7, emoji: "🌧️" },
   gravel: { label: "グラベル", front:-12, rear:-15, emoji: "🪨" },
