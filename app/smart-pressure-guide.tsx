@@ -2,6 +2,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Mic, MicOff, Volume2, VolumeX, RotateCcw, Gauge, ChevronLeft } from "lucide-react";
 
+declare global {
+  interface Window {
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
+
 const MANUFACTURER_CORRECTION: Record<string, { label: string; front: number; rear: number; note: string }> = {
   continental:  { label: "Continental",  front:  0, rear:  0, note: "標準ケーシング・GP5000定番" },
   panaracer:    { label: "Panaracer",    front: +2, rear: +2, note: "国産・高剛性ケーシング" },
@@ -123,6 +129,45 @@ const STEPS = [
   },
 ];
 
+type Option = { label: string; value: string | number; desc?: string };
+
+type CollectedParams = {
+  [key: string]: number | string | undefined;
+  weight?: number;
+  bikeWeight?: number;
+  tireSize?: number;
+  manufacturer?: string;
+  tireType?: string;
+  rimWidth?: number;
+  surface?: string;
+};
+
+type Message = {
+  id: number;
+  role: "assistant" | "user";
+  text: string;
+  stepType?: string;
+  options?: Option[];
+  isLast?: boolean;
+  result?: {
+    frontPsi: number;
+    rearPsi: number;
+    frontBar: string;
+    rearBar: string;
+    mfrNote: string;
+    surfaceEmoji: string;
+  };
+  params?: {
+    weightKg: number;
+    bikeWeightKg: number;
+    tireSizeC: number;
+    manufacturer: string;
+    tireType: string;
+    rimInternalWidth: number;
+    surface: string;
+  };
+};
+
 function calculatePressure({ weightKg, bikeWeightKg = 8, tireSizeC, manufacturer = "other", tireType = "clincher", rimInternalWidth = 19, surface = "dry" }: {
   weightKg: number;
   bikeWeightKg?: number;
@@ -157,7 +202,7 @@ function calculatePressure({ weightKg, bikeWeightKg = 8, tireSizeC, manufacturer
   };
 }
 
-function PressureGauge({ psi, label, color }) {
+function PressureGauge({ psi, label, color }: { psi: number; label: string; color: string }) {
   const min = 28, max = 130;
   const pct = Math.min(100, Math.max(0, ((psi - min) / (max - min)) * 100));
   const angle = -135 + (pct / 100) * 270;
@@ -182,9 +227,9 @@ function PressureGauge({ psi, label, color }) {
   );
 }
 
-function OptionButtons({ options, onSelect }) {
-  const [selected, setSelected] = useState(null);
-  const handleClick = (opt) => {
+function OptionButtons({ options, onSelect }: { options: Option[]; onSelect: (opt: Option) => void }) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const handleClick = (opt: Option) => {
     if (selected !== null) return;
     setSelected(opt.value + opt.label);
     setTimeout(() => onSelect(opt), 200);
@@ -207,17 +252,17 @@ function OptionButtons({ options, onSelect }) {
 
 export default function SmartPressureGuide() {
   const [currentStep, setCurrentStep]         = useState(0);
-  const [collectedParams, setCollectedParams] = useState({});
-  const [messages, setMessages]               = useState([]);
+  const [collectedParams, setCollectedParams] = useState<CollectedParams>({});
+  const [messages, setMessages]               = useState<Message[]>([]);
   const [numberInput, setNumberInput]         = useState("");
   const [voiceEnabled, setVoiceEnabled]       = useState(true);
   const [isListening, setIsListening]         = useState(false);
   const [isSpeaking, setIsSpeaking]           = useState(false);
   const [finished, setFinished]               = useState(false);
-  const messagesEndRef = useRef(null);
-  const recognitionRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
-  const speak = useCallback((text) => {
+  const speak = useCallback((text: string) => {
     if (!voiceEnabled || typeof window === "undefined" || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
@@ -234,7 +279,7 @@ export default function SmartPressureGuide() {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages]);
 
-  const handleAnswer = useCallback((value, display) => {
+  const handleAnswer = useCallback((value: string | number, display: string) => {
     const step = STEPS[currentStep];
     const newParams = { ...collectedParams, [step.key]: value };
     setCollectedParams(newParams);
@@ -347,7 +392,7 @@ export default function SmartPressureGuide() {
     speak(step.speak);
   };
 
-  const renderText = (text) => text.split("\n").map((line,i)=>(
+  const renderText = (text: string) => text.split("\n").map((line,i)=>(
     <div key={i} style={{ marginBottom:line===""?6:2 }}>
       {line.split(/\*\*(.*?)\*\*/g).map((p,j)=>j%2===1?<span key={j} style={{fontWeight:700,color:"#e6edf3"}}>{p}</span>:<span key={j}>{p}</span>)}
     </div>
