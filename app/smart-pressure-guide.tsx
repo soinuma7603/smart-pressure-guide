@@ -7,9 +7,13 @@ declare global {
     SpeechRecognition: any;
     webkitSpeechRecognition: any;
   }
+  // ↓ この1行を global の中に追加してください
+  type SpeechRecognition = any; 
 }
-// これを追加することで、エラーを完全に黙らせます
+
+// これもそのままでOK
 const SR = typeof window !== "undefined" && (window.SpeechRecognition || window.webkitSpeechRecognition);
+
 
 const MANUFACTURER_CORRECTION: Record<string, { label: string; front: number; rear: number; note: string }> = {
   continental:  { label: "Continental",  front:  0, rear:  0, note: "標準ケーシング・GP5000定番" },
