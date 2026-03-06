@@ -123,7 +123,15 @@ const STEPS = [
   },
 ];
 
-function calculatePressure({ weightKg, bikeWeightKg = 8, tireSizeC, manufacturer = "other", tireType = "clincher", rimInternalWidth = 19, surface = "dry" }) {
+function calculatePressure({ weightKg, bikeWeightKg = 8, tireSizeC, manufacturer = "other", tireType = "clincher", rimInternalWidth = 19, surface = "dry" }: {
+  weightKg: number;
+  bikeWeightKg?: number;
+  tireSizeC: number;
+  manufacturer?: string;
+  tireType?: string;
+  rimInternalWidth?: number;
+  surface?: string;
+}) {
   // 総重量（ライダー＋バイク）で計算（SRAM AXS方式）
   const totalWeight = weightKg + bikeWeightKg;
   const rearLoadKg  = totalWeight * 0.509;
