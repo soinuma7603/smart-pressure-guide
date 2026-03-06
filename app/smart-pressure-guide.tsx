@@ -7,11 +7,9 @@ declare global {
     SpeechRecognition: any;
     webkitSpeechRecognition: any;
   }
-  // ↓ この1行を global の中に追加してください
   type SpeechRecognition = any; 
 }
 
-// これもそのままでOK
 const SR = typeof window !== "undefined" && (window.SpeechRecognition || window.webkitSpeechRecognition);
 
 
@@ -351,7 +349,7 @@ export default function SmartPressureGuide() {
     if (isListening) { recognitionRef.current?.stop(); setIsListening(false); return; }
     const rec = new SR();
     rec.lang="ja-JP"; rec.continuous=false; rec.interimResults=false;
-    rec.onresult=(e)=>{ setNumberInput(e.results[0][0].transcript.replace(/[^0-9.]/g,"")); setIsListening(false); };
+    rec.onresult=(e: any)=>{ setNumberInput(e.results[0][0].transcript.replace(/[^0-9.]/g,"")); setIsListening(false); };
     rec.onerror=()=>setIsListening(false); rec.onend=()=>setIsListening(false);
     recognitionRef.current=rec; rec.start(); setIsListening(true);
   }, [isListening]);
